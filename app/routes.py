@@ -126,6 +126,8 @@ def show_results():
             "question_id": quiz.question_id,
             "chosen_answer": quiz.chosen_answer,
             "participant_age": quiz.participant.age,
+            "question_content": quiz.question.content,
+
         }
         for quiz in quizzes_query
     ]
@@ -139,7 +141,7 @@ def show_results():
         participants_df,
         names="age",
         hole=0.3,
-        title="Age Distribution",
+        title="응답자 연령 분포",
         color_discrete_sequence=px.colors.sequential.RdBu,
         labels={"age": "Age Group"},
     )
@@ -149,7 +151,7 @@ def show_results():
         participants_df,
         names="gender",
         hole=0.3,
-        title="Gender Distribution",
+        title="응답자 성별 분포",
         color_discrete_sequence=px.colors.sequential.Purp,
         labels={"gender": "Gender"},
     )
@@ -160,10 +162,11 @@ def show_results():
     # 각 질문 ID별로 반복하여 그래프 생성
     for question_id in quizzes_df["question_id"].unique():
         filtered_df = quizzes_df[quizzes_df["question_id"] == question_id]
+        question_content = filtered_df["question_content"].iloc[0]
         fig = px.histogram(
             filtered_df,
             x="chosen_answer",
-            title=f"Question {question_id} Responses",
+            title=f"{question_content}",
             color="chosen_answer",
             barmode="group",
             category_orders={"chosen_answer": ["yes", "no"]},  # 카테고리 순서 지정
@@ -182,7 +185,7 @@ def show_results():
         fig.update_traces(marker_line_width=1.5, opacity=0.6)  # 투명도와 테두리 두께 조정
 
         # 생성된 그래프를 딕셔너리에 저장
-        quiz_response_figs[f"question_{question_id}"] = fig
+        quiz_response_figs[f"question_{question_content}"] = fig
     age_quiz_response_figs = {}
 
     # 나이대를 구분하는 함수
@@ -204,12 +207,13 @@ def show_results():
     # 각 질문 ID와 나이대별로 대답 분포를 시각화
     for question_id in quizzes_df["question_id"].unique():
         filtered_df = quizzes_df[quizzes_df["question_id"] == question_id]
+        question_content = filtered_df["question_content"].iloc[0]
         fig = px.histogram(
             filtered_df,
             x="age_group",
             color="chosen_answer",
             barmode="group",
-            title=f"Question {question_id} Responses by Age Group",
+            title=f"{question_content} 연령대 별 응답",
             labels={"age_group": "Age Group", "chosen_answer": "Chosen Answer"},
             category_orders={"age_group": ["10s", "20s", "30s", "40s", "50s+"]},
         )
